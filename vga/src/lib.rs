@@ -1,14 +1,17 @@
 #![no_std]
 
-// VGA memory address
-static VGA_BUFFER: u32 = 0xb8000;
+mod colour;
+mod writer;
 
-pub fn write_to_screen(text: &[u8]) {
-    let vga_buffer = VGA_BUFFER as *mut u8;
-    for (i, &byte) in text.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+use lazy_static::lazy_static;
+
+use crate::writer::Writer;
+
+// VGA memory address
+pub static VGA_BUFFER: u32 = 0xb8000;
+pub static BUFFER_HEIGHT: usize = 25;
+pub static BUFFER_WIDTH: usize = 80;
+
+lazy_static! {
+    pub static ref WRITER: spin::Mutex<Writer> = spin::Mutex::new(Writer::new());
 }

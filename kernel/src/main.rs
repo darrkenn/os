@@ -1,14 +1,13 @@
 #![no_std]
 #![no_main]
 
-use core::panic::PanicInfo;
+use core::{fmt::Write, panic::PanicInfo};
 
-use kernel_lib::exit_qemu;
+use vga::WRITER;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-    vga::write_to_screen(b"HELLO WORLD");
-    exit_qemu(kernel_lib::QemuExitCode::Success);
+    unreachable!()
 }
 
 #[panic_handler]
