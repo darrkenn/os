@@ -1,10 +1,9 @@
 #![no_std]
 
-pub mod cmos;
 pub mod convert;
-pub mod datetime;
-pub mod exit;
 pub mod serial;
+pub mod system;
+pub mod time;
 
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;
@@ -12,7 +11,7 @@ use vga::WRITER;
 use vga::println;
 use vga::{Colour, ColourCode};
 
-use crate::cmos::CMOS;
+use crate::time::cmos::CMOS;
 
 lazy_static! {
     pub static ref GLOBAL_CMOS: spin::Mutex<CMOS> = spin::Mutex::new(unsafe { CMOS::new() });
@@ -31,7 +30,7 @@ pub fn panic(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    use crate::exit::{QemuExitCode, exit_qemu};
+    use crate::system::exit::qemu::{QemuExitCode, exit_qemu};
 
     println!("[failed]\n");
     println!("Error: {}\n", info);

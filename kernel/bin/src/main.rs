@@ -15,20 +15,24 @@ macro_rules! call_test {
     };
 }
 
-use lib::datetime::DateTimeField;
+use lib::{
+    system::{self, exit},
+    time::datetime,
+};
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
-use vga::{WRITER, println};
+use vga::println;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     println!("Hello world{}", "!");
 
-    let mut datetime = lib::datetime::DateTime::new();
+    let datetime = datetime::DateTime::new();
 
     println!("Second: {}", datetime.second);
     println!("Minute: {}", datetime.minute);
+    println!("Hour: {}", datetime.hour);
     println!("Day: {}", datetime.day);
     println!("Month: {}", datetime.month);
     println!("Year: {}", datetime.year);
@@ -53,5 +57,5 @@ fn test_runner(tests: &[&dyn Fn()]) {
     for test in tests {
         test();
     }
-    lib::exit::exit_qemu(lib::exit::QemuExitCode::Success);
+    system::exit::qemu::exit_qemu(exit::qemu::QemuExitCode::Success);
 }
