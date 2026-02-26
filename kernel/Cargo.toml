@@ -1,0 +1,22 @@
+[package]
+name = "kernel"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+vga = {path = "../vga"}
+x86_64 = "0.15.4"
+bootloader = "0.9"
+
+[[bin]]
+name = "kernel"
+path = "src/main.rs"
+test = false
+bench = false
+
+[lib]
+name = "kernel_lib"
+path = "src/lib.rs"
+test = false
+bench = false
+
