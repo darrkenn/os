@@ -1,11 +1,14 @@
 #![no_std]
 
-mod colour;
-mod writer;
+pub mod colour;
+pub mod print;
+pub mod writer;
+
+pub use colour::Colour;
+pub use colour::ColourCode;
+pub use writer::Writer;
 
 use lazy_static::lazy_static;
-
-use crate::writer::Writer;
 
 // VGA memory address
 pub static VGA_BUFFER: u32 = 0xb8000;

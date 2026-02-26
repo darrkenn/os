@@ -1,0 +1,19 @@
+[package]
+name = "lib"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+vga = {path = "../../vga"}
+x86_64 = "0.15.4"
+lazy_static = {version = "1.5.0", features = ["spin_no_std"]}
+spin = "0.10.0"
+uart_16550 = "0.4.0"
+
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+test = false
+bench = false
+

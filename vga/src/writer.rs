@@ -53,8 +53,22 @@ impl Writer {
     pub fn set_colour_code(&mut self, colour_code: ColourCode) {
         self.colour_code = colour_code
     }
-    pub fn location(&self) -> (usize, usize) {
+    pub fn position(&self) -> (usize, usize) {
         (self.row, self.column)
+    }
+    pub fn move_position(&mut self, row: usize, col: usize) {
+        self.move_row_position(row);
+        self.move_col_position(col);
+    }
+    pub fn move_row_position(&mut self, row: usize) {
+        if row <= 25 && row >= 1 {
+            self.row = row;
+        }
+    }
+    pub fn move_col_position(&mut self, col: usize) {
+        if col <= 80 && col >= 1 {
+            self.column = col;
+        }
     }
     // Clear
     pub fn clear_screen(&mut self) {
