@@ -15,28 +15,30 @@ macro_rules! call_test {
     };
 }
 
+use bootloader_api::{BootInfo, entry_point};
 use lib::{
+    serial_println,
     system::{self, exit},
     time::datetime,
 };
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
-use vga::println;
 
-#[unsafe(no_mangle)]
-pub extern "C" fn _start() -> ! {
-    println!("Hello world{}", "!");
+entry_point!(kernel_main);
+
+fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
+    serial_println!("Hello world{}", "!");
 
     let datetime = datetime::DateTime::new();
 
-    println!("Second: {}", datetime.second);
-    println!("Minute: {}", datetime.minute);
-    println!("Hour: {}", datetime.hour);
-    println!("Day: {}", datetime.day);
-    println!("Month: {}", datetime.month);
-    println!("Year: {}", datetime.year);
-    println!("Century: {}", datetime.century);
+    serial_println!("Second: {}", datetime.second);
+    serial_println!("Minute: {}", datetime.minute);
+    serial_println!("Hour: {}", datetime.hour);
+    serial_println!("Day: {}", datetime.day);
+    serial_println!("Month: {}", datetime.month);
+    serial_println!("Year: {}", datetime.year);
+    serial_println!("Century: {}", datetime.century);
 
     #[cfg(test)]
     test_main();
@@ -53,7 +55,7 @@ mod tests {
 
 #[allow(dead_code)]
 fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
