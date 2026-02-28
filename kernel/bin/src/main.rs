@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+pub mod init;
+
 // This macro creates a test with the name of the function provided and calls it
 #[macro_export]
 macro_rules! call_test {
@@ -15,35 +17,25 @@ macro_rules! call_test {
 use bootloader_api::{BootInfo, entry_point};
 use lib::{
     fb_println,
-    output::framebuffer::FRAME_BUFFER_WRITER,
     time::{datetime, delay},
 };
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
 
+use crate::init::init;
+
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
-    let frame_buffer = boot_info.framebuffer.as_mut().unwrap();
-    let frame_buffer_info = frame_buffer.info().clone();
+    init(boot_info);
 
-    FRAME_BUFFER_WRITER
-        .lock()
-        .set(frame_buffer.buffer_mut(), frame_buffer_info);
+    fb_println!("Hello");
 
-    FRAME_BUFFER_WRITER
-        .lock()
-        .clear()
-        .expect("Unable to clear framebuffer");
-    let mut datetime = datetime::DateTime::new();
+    fn stack_overflow() {
+        stack_overflow();
+    }
+    stack_overflow();
 
-    fb_println!("My current seconds: {}", datetime.second);
-    delay::from_secs(10);
-    datetime.reset();
-    fb_println!(
-        "Im ten seconds in the future and my seconds are: {}",
-        datetime.second
-    );
     loop {}
 }

@@ -1,11 +1,12 @@
 #![no_std]
+#![feature(abi_x86_interrupt)]
 
 pub mod convert;
 pub mod output;
 pub mod system;
 pub mod time;
 
-use crate::time::cmos::CMOS;
+use crate::{output::framebuffer::FRAME_BUFFER_WRITER, time::cmos::CMOS};
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 
@@ -15,6 +16,6 @@ lazy_static! {
 
 #[panic_handler]
 pub fn panic(info: &PanicInfo) -> ! {
-    serial_println!("{}", info);
+    fb_println!("{}", info);
     loop {}
 }

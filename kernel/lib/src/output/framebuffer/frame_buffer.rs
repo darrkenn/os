@@ -28,25 +28,27 @@ mod font_constants {
     pub const FONT_WEIGHT: FontWeight = FontWeight::Regular;
 }
 
-#[derive(Clone, Copy)]
-pub struct Colour {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
+pub enum FrameBufferColour {
+    Red,
+    Green,
+    Blue,
+    White,
+    Yellow,
+    Purple,
+    Brown,
 }
 
-impl Colour {
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
-        Colour { r, g, b }
-    }
-    pub fn red() -> Self {
-        Self::new(255, 0, 0)
-    }
-    pub fn blue() -> Self {
-        Self::new(0, 0, 255)
-    }
-    pub fn green() -> Self {
-        Self::new(0, 255, 0)
+impl FrameBufferColour {
+    pub fn to_bgr(intensity: u8, colour: &Self) -> [u8; 4] {
+        match colour {
+            FrameBufferColour::Red => [0, 0, intensity, 0],
+            FrameBufferColour::Green => [0, intensity, 0, 0],
+            FrameBufferColour::Blue => [intensity, 0, 0, 0],
+            FrameBufferColour::White => [intensity, intensity, intensity, 0],
+            FrameBufferColour::Yellow => [intensity, intensity, 0, 0],
+            FrameBufferColour::Purple => [intensity, 0, intensity, 0],
+            FrameBufferColour::Brown => [0, intensity, intensity, 0],
+        }
     }
 }
 
@@ -67,7 +69,7 @@ pub struct FrameBufferWriter {
     info: Option<FrameBufferInfo>,
     x: usize,
     y: usize,
-    current_colour: Colour,
+    current_colour: FrameBufferColour,
 }
 
 impl FrameBufferWriter {
@@ -81,8 +83,11 @@ impl FrameBufferWriter {
             info: None,
             x: 0,
             y: 0,
-            current_colour: Colour::blue(),
+            current_colour: FrameBufferColour::White,
         }
+    }
+    pub fn change_colour(&mut self, colour: FrameBufferColour) {
+        self.current_colour = colour;
     }
     fn newline(&mut self) {
         self.y += font_constants::CHAR_RASTER_HEIGHT.val() + LINE_SPACING;
@@ -156,12 +161,7 @@ impl FrameBufferWriter {
 
         let pixel_offset = y * stride + x;
         let color = match pixel_format {
-            PixelFormat::Rgb => [
-                self.current_colour.r,
-                self.current_colour.g,
-                self.current_colour.b,
-                0,
-            ],
+            PixelFormat::Rgb => [intensity, intensity, intensity, 0],
             /*
             PixelFormat::Bgr => [
                 self.current_colour.b,
@@ -170,7 +170,7 @@ impl FrameBufferWriter {
                 0,
             ],
             */
-            PixelFormat::Bgr => [intensity, intensity, intensity, 0],
+            PixelFormat::Bgr => FrameBufferColour::to_bgr(intensity, &self.current_colour),
             //PixelFormat::Rgb => [intensity, intensity, intensity / 2, 0],
             //PixelFormat::Bgr => [intensity / 2, intensity, intensity, 0],
             PixelFormat::U8 => [if intensity > 200 { 0xf } else { 0 }, 0, 0, 0],
