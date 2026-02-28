@@ -1,8 +1,5 @@
 #![no_std]
 #![no_main]
-#![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
-#![reexport_test_harness_main = "test_main"]
 
 // This macro creates a test with the name of the function provided and calls it
 #[macro_export]
@@ -16,48 +13,36 @@ macro_rules! call_test {
 }
 
 use bootloader_api::{BootInfo, entry_point};
-use lib::{
-    serial_println,
-    system::{self, exit},
-    time::datetime,
-};
+use lib::{fb_println, output::framebuffer::FRAME_BUFFER_WRITER, serial_println, time::datetime};
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
 
 entry_point!(kernel_main);
 
-fn kernel_main(_boot_info: &'static mut BootInfo) -> ! {
-    serial_println!("Hello world{}", "!");
+fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
+    let frame_buffer = boot_info.framebuffer.as_mut().unwrap();
+    let frame_buffer_info = frame_buffer.info().clone();
 
+    FRAME_BUFFER_WRITER
+        .lock()
+        .set(frame_buffer.buffer_mut(), frame_buffer_info);
+
+    FRAME_BUFFER_WRITER.lock().clear();
     let datetime = datetime::DateTime::new();
 
-    serial_println!("Second: {}", datetime.second);
-    serial_println!("Minute: {}", datetime.minute);
-    serial_println!("Hour: {}", datetime.hour);
-    serial_println!("Day: {}", datetime.day);
-    serial_println!("Month: {}", datetime.month);
-    serial_println!("Year: {}", datetime.year);
-    serial_println!("Century: {}", datetime.century);
+    fb_println!(
+        "Second: {}\nMinute: {}\nHour: {}\nDay: {}\nMonth: {}\nYear: {}\nCentury: {}\n",
+        datetime.second,
+        datetime.minute,
+        datetime.hour,
+        datetime.day,
+        datetime.month,
+        datetime.year,
+        datetime.century
+    );
 
-    #[cfg(test)]
-    test_main();
+    serial_println!("Hello world{}", "!");
 
     loop {}
-}
-
-#[cfg(test)]
-mod tests {
-    use lib::lib_test;
-
-    call_test!(lib_test);
-}
-
-#[allow(dead_code)]
-fn test_runner(tests: &[&dyn Fn()]) {
-    serial_println!("Running {} tests", tests.len());
-    for test in tests {
-        test();
-    }
-    system::exit::qemu::exit_qemu(exit::qemu::QemuExitCode::Success);
 }

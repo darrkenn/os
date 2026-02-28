@@ -11,7 +11,7 @@ bootloader_api = "0.11.15"
 [[bin]]
 name = "kernel"
 path = "src/main.rs"
-test = true
+test = false
 bench = false
 
 
