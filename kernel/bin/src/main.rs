@@ -13,7 +13,11 @@ macro_rules! call_test {
 }
 
 use bootloader_api::{BootInfo, entry_point};
-use lib::{fb_println, output::framebuffer::FRAME_BUFFER_WRITER, serial_println, time::datetime};
+use lib::{
+    fb_println,
+    output::framebuffer::FRAME_BUFFER_WRITER,
+    time::{datetime, delay},
+};
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
@@ -32,20 +36,14 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         .lock()
         .clear()
         .expect("Unable to clear framebuffer");
-    let datetime = datetime::DateTime::new();
+    let mut datetime = datetime::DateTime::new();
 
+    fb_println!("My current seconds: {}", datetime.second);
+    delay::from_secs(10);
+    datetime.reset();
     fb_println!(
-        "Second: {}\nMinute: {}\nHour: {}\nDay: {}\nMonth: {}\nYear: {}\nCentury: {}\n",
-        datetime.second,
-        datetime.minute,
-        datetime.hour,
-        datetime.day,
-        datetime.month,
-        datetime.year,
-        datetime.century
+        "Im ten seconds in the future and my seconds are: {}",
+        datetime.second
     );
-
-    serial_println!("Hello world{}", "!");
-
     loop {}
 }
