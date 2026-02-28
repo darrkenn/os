@@ -28,7 +28,10 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         .lock()
         .set(frame_buffer.buffer_mut(), frame_buffer_info);
 
-    FRAME_BUFFER_WRITER.lock().clear();
+    FRAME_BUFFER_WRITER
+        .lock()
+        .clear()
+        .expect("Unable to clear framebuffer");
     let datetime = datetime::DateTime::new();
 
     fb_println!(

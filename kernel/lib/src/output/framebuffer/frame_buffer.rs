@@ -1,12 +1,10 @@
-use core::{cell::OnceCell, error::Error, fmt, iter::Once, ptr};
+use core::{fmt, ptr};
 
 use noto_sans_mono_bitmap::{
     FontWeight, RasterHeight, RasterizedChar, get_raster, get_raster_width,
 };
 
 use bootloader_api::info::{FrameBufferInfo, PixelFormat};
-use lazy_static::lazy_static;
-use spin::Mutex;
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum FrameBufferError {
@@ -78,15 +76,13 @@ impl FrameBufferWriter {
         self.info = Some(info);
     }
     pub fn new() -> Self {
-        let mut writer = Self {
+        Self {
             framebuffer: None,
             info: None,
             x: 0,
             y: 0,
             current_colour: Colour::blue(),
-        };
-        writer.clear();
-        writer
+        }
     }
     fn newline(&mut self) {
         self.y += font_constants::CHAR_RASTER_HEIGHT.val() + LINE_SPACING;
@@ -134,7 +130,7 @@ impl FrameBufferWriter {
                 }
                 let new_ypos = self.y + font_constants::CHAR_RASTER_HEIGHT.val() + BORDER_PADDING;
                 if new_ypos >= self.height().expect("Can't get framebuffer height") {
-                    self.clear();
+                    self.clear().expect("Framebuffer was unable to clear");
                 }
                 self.write_rendered_char(get_char_raster(c));
             }
