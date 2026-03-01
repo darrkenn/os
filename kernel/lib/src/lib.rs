@@ -1,10 +1,10 @@
 #![no_std]
 #![feature(abi_x86_interrupt)]
 
-pub mod convert;
 pub mod output;
 pub mod system;
 pub mod time;
+pub mod utils;
 
 use crate::{output::framebuffer::FRAME_BUFFER_WRITER, time::cmos::CMOS};
 use core::panic::PanicInfo;

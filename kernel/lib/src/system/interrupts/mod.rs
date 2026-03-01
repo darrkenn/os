@@ -1,7 +1,7 @@
-pub mod gdt;
-pub mod idt;
+mod handlers;
+pub mod tables;
 
 pub fn init() {
-    gdt::init();
-    idt::init();
+    tables::gdt::init();
+    tables::idt::init();
 }

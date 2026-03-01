@@ -1,5 +1,7 @@
 use x86_64::instructions::port::Port;
 
+use crate::utils::convert::bcd_to_binary;
+
 pub struct CMOS {
     address: Port<u8>,
     data: Port<u8>,
@@ -37,6 +39,6 @@ impl CMOS {
             self.address.write(reg as u8);
         }
         let value = unsafe { self.data.read() };
-        crate::convert::bcd_to_binary(value)
+        bcd_to_binary(value)
     }
 }
