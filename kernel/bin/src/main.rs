@@ -15,7 +15,7 @@ macro_rules! call_test {
 }
 
 use bootloader_api::{BootInfo, config::Mapping, entry_point};
-use lib::{fb_println, time::delay};
+use lib::fb_println;
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
@@ -33,10 +33,6 @@ entry_point!(kernel_main, config = &CONFIG);
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     init(boot_info);
 
-    fb_println!("Hello");
-
-    delay::from_secs(10);
-    fb_println!("Delay 10 secs later");
-
+    fb_println!("Im here!");
     loop {}
 }

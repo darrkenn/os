@@ -3,7 +3,10 @@ use lib::{
     fb_println,
     output::framebuffer::FRAME_BUFFER_WRITER,
     system::{
-        interrupts::tables::rsdp_table::RsdpTable,
+        acpi::{
+            rsdp::{RsdpError, RsdpTable},
+            xsdt::XSDT,
+        },
         physical_memory::{PHYSICAL_MEMORY_OFFSET, convert_physical_to_virtual_addr},
     },
     utils::deadlock::lock_mutex,
@@ -14,7 +17,6 @@ pub fn init(boot_info: &'static mut BootInfo) {
     let frame_buffer = boot_info.framebuffer.as_mut().unwrap();
     let frame_buffer_info = frame_buffer.info().clone();
     lock_mutex(&FRAME_BUFFER_WRITER).set(frame_buffer.buffer_mut(), frame_buffer_info);
-    // Clear framebuffer
     lock_mutex(&FRAME_BUFFER_WRITER)
         .clear()
         .expect("Unable to clear framebuffer");
@@ -29,12 +31,34 @@ pub fn init(boot_info: &'static mut BootInfo) {
 
     // Get phyiscal memory offset
     match boot_info.physical_memory_offset.into_option() {
-        Some(pmo) => lock_mutex(&PHYSICAL_MEMORY_OFFSET).set(pmo),
+        Some(pmo) => lock_mutex(&PHYSICAL_MEMORY_OFFSET)
+            .set(pmo)
+            .expect("Unable to set phyical memory offset"),
         None => {
             panic!("No phyiscal memory offset found, ensure enabled in boot config")
         }
     };
 
+    // Load and validate rsdp table
     let rsdp_table = RsdpTable::new(convert_physical_to_virtual_addr(rsdp_addr));
-    fb_println!("{:#?}", rsdp_table);
+    fb_println!("Rsdp version: {}", rsdp_table.revision());
+    match rsdp_table.validate() {
+        Ok(_) => {
+            fb_println!("Rstp table okay")
+        }
+        Err(e) => match e {
+            RsdpError::InvalidSignature(sig) => {
+                panic!("Invalid rsdp: {:#?}", sig);
+            }
+            RsdpError::InvalidChecksum(csum) => {
+                panic!("Invalid v1 checksum: {:#?}", csum);
+            }
+        },
+    }
+
+    // Load and validate xsdt table
+    let xsdt_address = convert_physical_to_virtual_addr(rsdp_table.xsdt_address());
+    let xsdt = XSDT::new(xsdt_address);
+    let header = xsdt.header();
+    fb_println!("Signature: {:#?}", header.signature());
 }
