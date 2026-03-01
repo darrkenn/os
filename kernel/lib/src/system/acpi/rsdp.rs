@@ -1,6 +1,7 @@
 use core::slice;
 
-const RSDP_SIGNATURE: [char; 8] = ['R', 'S', 'D', ' ', 'P', 'T', 'R', ' '];
+use crate::system::acpi;
+
 const RSDP_V1_LEN: usize = 20;
 
 #[derive(Clone, Copy, Debug)]
@@ -20,7 +21,7 @@ pub struct RsdpTable {
 }
 
 pub enum RsdpError {
-    InvalidSignature([char; 8]),
+    InvalidSignature([u8; 8]),
     InvalidChecksum(u8),
 }
 
@@ -30,11 +31,9 @@ impl RsdpTable {
         unsafe { ptr.read_unaligned() }
     }
     pub fn validate(&self) -> Result<(), RsdpError> {
-        let signature = self.build_signature();
-        if signature != RSDP_SIGNATURE {
-            return Err(RsdpError::InvalidSignature(signature));
+        if self.signature != acpi::signatures::RSDP {
+            return Err(RsdpError::InvalidSignature(self.signature));
         }
-
         let sum = self.checksum();
         if sum != 0 {
             return Err(RsdpError::InvalidChecksum(sum));
@@ -49,14 +48,6 @@ impl RsdpTable {
     }
     pub fn xsdt_address(&self) -> u64 {
         self.xsdt_address
-    }
-    fn build_signature(&self) -> [char; 8] {
-        let mut signature: [char; 8] = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
-        self.signature
-            .iter()
-            .enumerate()
-            .for_each(|(i, b)| signature[i] = char::from(*b));
-        signature
     }
     fn checksum(&self) -> u8 {
         // Sets length based on rsdp version

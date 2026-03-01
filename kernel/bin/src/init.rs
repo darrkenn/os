@@ -4,7 +4,9 @@ use lib::{
     output::framebuffer::FRAME_BUFFER_WRITER,
     system::{
         acpi::{
+            self,
             rsdp::{RsdpError, RsdpTable},
+            sdt::{SdtHeader, SdtHeaderError},
             xsdt::XSDT,
         },
         physical_memory::{PHYSICAL_MEMORY_OFFSET, convert_physical_to_virtual_addr},
@@ -13,52 +15,34 @@ use lib::{
 };
 
 pub fn init(boot_info: &'static mut BootInfo) {
-    // Setup framebuffer
-    let frame_buffer = boot_info.framebuffer.as_mut().unwrap();
-    let frame_buffer_info = frame_buffer.info().clone();
-    lock_mutex(&FRAME_BUFFER_WRITER).set(frame_buffer.buffer_mut(), frame_buffer_info);
-    lock_mutex(&FRAME_BUFFER_WRITER)
-        .clear()
-        .expect("Unable to clear framebuffer");
+    unsafe {
+        // Setup framebuffer
+        let frame_buffer = boot_info.framebuffer.as_mut().unwrap();
+        let frame_buffer_info = frame_buffer.info().clone();
+        lock_mutex(&FRAME_BUFFER_WRITER).set(frame_buffer.buffer_mut(), frame_buffer_info);
+        lock_mutex(&FRAME_BUFFER_WRITER)
+            .clear()
+            .expect("Unable to clear framebuffer");
 
-    // Get the address of the rsdp table
-    let rsdp_addr = match boot_info.rsdp_addr.into_option() {
-        Some(addr) => addr,
-        None => {
-            panic!("No rsdp_addr found");
-        }
-    };
-
-    // Get phyiscal memory offset
-    match boot_info.physical_memory_offset.into_option() {
-        Some(pmo) => lock_mutex(&PHYSICAL_MEMORY_OFFSET)
-            .set(pmo)
-            .expect("Unable to set phyical memory offset"),
-        None => {
-            panic!("No phyiscal memory offset found, ensure enabled in boot config")
-        }
-    };
-
-    // Load and validate rsdp table
-    let rsdp_table = RsdpTable::new(convert_physical_to_virtual_addr(rsdp_addr));
-    fb_println!("Rsdp version: {}", rsdp_table.revision());
-    match rsdp_table.validate() {
-        Ok(_) => {
-            fb_println!("Rstp table okay")
-        }
-        Err(e) => match e {
-            RsdpError::InvalidSignature(sig) => {
-                panic!("Invalid rsdp: {:#?}", sig);
+        // Get the address of the rsdp table
+        let rsdp_addr = match boot_info.rsdp_addr.into_option() {
+            Some(addr) => addr,
+            None => {
+                panic!("No rsdp_addr found");
             }
-            RsdpError::InvalidChecksum(csum) => {
-                panic!("Invalid v1 checksum: {:#?}", csum);
+        };
+
+        // Get phyiscal memory offset
+        match boot_info.physical_memory_offset.into_option() {
+            Some(pmo) => lock_mutex(&PHYSICAL_MEMORY_OFFSET)
+                .set(pmo)
+                .expect("Unable to set phyical memory offset"),
+            None => {
+                panic!("No phyiscal memory offset found, ensure enabled in boot config")
             }
-        },
+        };
+
+        // Init acpi
+        acpi::init::init(rsdp_addr);
     }
-
-    // Load and validate xsdt table
-    let xsdt_address = convert_physical_to_virtual_addr(rsdp_table.xsdt_address());
-    let xsdt = XSDT::new(xsdt_address);
-    let header = xsdt.header();
-    fb_println!("Signature: {:#?}", header.signature());
 }

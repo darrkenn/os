@@ -1,9 +1,9 @@
-use crate::system::acpi::sdt::SDTHeader;
+use crate::system::acpi::sdt::SdtHeader;
 
 #[repr(C, packed)]
 pub struct XSDT {
-    h: SDTHeader,
-    next_sdt: u64,
+    h: SdtHeader,
+    fadt_addr: u64,
 }
 
 impl XSDT {
@@ -11,7 +11,10 @@ impl XSDT {
         let ptr = xsdt_addr as *const XSDT;
         unsafe { ptr.read_unaligned() }
     }
-    pub fn header(&self) -> SDTHeader {
+    pub fn header(&self) -> SdtHeader {
         self.h
+    }
+    pub fn fadt_addr(&self) -> u64 {
+        self.fadt_addr
     }
 }

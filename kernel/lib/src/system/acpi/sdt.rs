@@ -1,6 +1,17 @@
+use crate::system::acpi;
+
+pub mod sdt_header_signatures {
+    // X S D T
+    pub const XSDT: [u8; 4] = [88, 83, 68, 84];
+}
+
+pub enum SdtHeaderError {
+    InvalidSignature([u8; 4]),
+}
+
 #[derive(Clone, Copy, Debug)]
 #[repr(C, packed)]
-pub struct SDTHeader {
+pub struct SdtHeader {
     signature: [u8; 4],
     length: u32,
     revision: u8,
@@ -12,11 +23,21 @@ pub struct SDTHeader {
     creator_revision: u32,
 }
 
-impl SDTHeader {
+impl SdtHeader {
+    pub fn validate_signature(&self, signature: [u8; 4]) -> bool {
+        if self.signature != signature {
+            false
+        } else {
+            true
+        }
+    }
     pub fn signature(&self) -> [u8; 4] {
         self.signature
     }
     pub fn length(&self) -> u32 {
         self.length
+    }
+    pub fn revision(self) -> u8 {
+        self.revision
     }
 }
