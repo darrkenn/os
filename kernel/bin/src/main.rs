@@ -14,7 +14,7 @@ macro_rules! call_test {
     };
 }
 
-use bootloader_api::{BootInfo, entry_point};
+use bootloader_api::{BootInfo, config::Mapping, entry_point};
 use lib::{fb_println, time::delay};
 // Import is actually used
 #[allow(unused_imports)]
@@ -22,7 +22,13 @@ use lib::panic;
 
 use crate::init::init;
 
-entry_point!(kernel_main);
+const CONFIG: bootloader_api::BootloaderConfig = {
+    let mut config = bootloader_api::BootloaderConfig::new_default();
+    config.mappings.physical_memory = Some(Mapping::Dynamic);
+    config
+};
+
+entry_point!(kernel_main, config = &CONFIG);
 
 fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     init(boot_info);
