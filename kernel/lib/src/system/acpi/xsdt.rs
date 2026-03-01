@@ -5,6 +5,7 @@ use crate::system::acpi::sdt::SdtHeader;
 #[repr(C, packed)]
 pub struct XSDT {
     h: SdtHeader,
+    // Entries occur here but amount is unknown
 }
 
 pub struct XSDTRegion {

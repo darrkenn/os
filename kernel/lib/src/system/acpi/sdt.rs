@@ -1,5 +1,3 @@
-use crate::system::acpi;
-
 pub mod sdt_header_signatures {
     // X S D T
     pub const XSDT: [u8; 4] = [88, 83, 68, 84];
