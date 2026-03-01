@@ -40,4 +40,8 @@ impl SdtHeader {
     pub fn revision(self) -> u8 {
         self.revision
     }
+    pub fn from_addr(addr: u64) -> Self {
+        let ptr = addr as *const SdtHeader;
+        unsafe { ptr.read_unaligned() }
+    }
 }
