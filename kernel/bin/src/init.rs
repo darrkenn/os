@@ -9,6 +9,7 @@ use lib::{
             sdt::{SdtHeader, SdtHeaderError},
             xsdt::XSDT,
         },
+        interrupts,
         physical_memory::{PHYSICAL_MEMORY_OFFSET, convert_physical_to_virtual_addr},
     },
     utils::deadlock::lock_mutex,
@@ -42,6 +43,7 @@ pub fn init(boot_info: &'static mut BootInfo) {
             }
         };
 
+        interrupts::init();
         // Init acpi
         acpi::init::init(rsdp_addr);
     }

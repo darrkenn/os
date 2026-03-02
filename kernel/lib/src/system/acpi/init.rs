@@ -5,6 +5,7 @@ use crate::{
     system::{
         acpi::{
             fadt::{AddressType, FADT},
+            local_apic,
             madt::{MADT, MADTRegion},
             rsdp::{RsdpError, RsdpTable},
             sdt::{SdtHeader, SdtHeaderError},
@@ -56,5 +57,9 @@ pub fn init(rsdp_addr: u64) {
 
     let madt = MADTRegion::new(madt_addr);
     let lic_addr = convert_physical_to_virtual_addr(madt.table.lic_address() as u64);
-    fb_println!("{}", lic_addr);
+
+    unsafe { local_apic::enable_apic(lic_addr) };
+    unsafe {
+        local_apic::set_dvr(lic_addr);
+    }
 }
