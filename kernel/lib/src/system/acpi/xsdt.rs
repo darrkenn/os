@@ -1,6 +1,6 @@
 use core::{ops::Add, ptr};
 
-use crate::system::acpi::sdt::SdtHeader;
+use crate::system::{acpi::sdt::SdtHeader, physical_memory::convert_physical_to_virtual_addr};
 
 #[repr(C, packed)]
 pub struct XSDT {
@@ -38,7 +38,7 @@ impl XSDTRegion {
     pub fn get_entry_by_signature(&self, signature: [u8; 4]) -> Option<u64> {
         for i in 0..self.entries_count() {
             let addr = self.get_entry_by_index(i);
-            let header = SdtHeader::from_addr(addr);
+            let header = SdtHeader::from_addr(convert_physical_to_virtual_addr(addr));
             if header.validate_signature(signature) {
                 return Some(addr);
             }

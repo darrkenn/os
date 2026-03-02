@@ -8,7 +8,7 @@ pub struct MADT {
     // Local interrupt controller address
     lic_address: u32,
     flags: u32,
-    // Interrupt controller structure
+    // Interrupt controller structures
 }
 
 pub struct MADTRegion {

@@ -47,22 +47,9 @@ pub fn init(rsdp_addr: u64) {
         fb_println!("Xsdt validated")
     };
 
-    let fadt_addr = convert_physical_to_virtual_addr(xsdt_region.get_entry_by_index(0));
-
-    let fadt = FADT::new(fadt_addr);
-    if !fadt.header().validate_signature(signatures::FADT) {
-        panic!("Invalid fadt signature: {:#?}", fadt.header().signature());
-    } else {
-        fb_println!("Fadt validated");
-    }
-    match fadt.which_firmware_ctrl() {
-        AddressType::Base => {
-            fb_println!("FACS loaded");
-            let facs_addr = fadt.firmware_ctrl_addr();
-        }
-        AddressType::Extended => {
-            fb_println!("Extended FACS loaded");
-            let facs_addr = fadt.extended_firmware_ctrl_addr();
-        }
-    }
+    let madt_addr = convert_physical_to_virtual_addr(
+        xsdt_region
+            .get_entry_by_signature(signatures::MADT)
+            .expect("Couldn't find madt"),
+    );
 }
