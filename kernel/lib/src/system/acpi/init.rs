@@ -58,8 +58,8 @@ pub fn init(rsdp_addr: u64) {
     let madt = MADTRegion::new(madt_addr);
     let lic_addr = convert_physical_to_virtual_addr(madt.table.lic_address() as u64);
 
-    unsafe { local_apic::enable_apic(lic_addr) };
+    // Setup CPU local apic and enable timer
     unsafe {
-        local_apic::set_dvr(lic_addr);
+        local_apic::init(lic_addr, local_apic::timer::TimerMode::Periodic);
     }
 }
