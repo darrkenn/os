@@ -5,6 +5,7 @@ use crate::{
     system::{
         acpi::{
             fadt::{AddressType, FADT},
+            madt::{MADT, MADTRegion},
             rsdp::{RsdpError, RsdpTable},
             sdt::{SdtHeader, SdtHeaderError},
             signatures,
@@ -52,4 +53,8 @@ pub fn init(rsdp_addr: u64) {
             .get_entry_by_signature(signatures::MADT)
             .expect("Couldn't find madt"),
     );
+
+    let madt = MADTRegion::new(madt_addr);
+    let lic_addr = convert_physical_to_virtual_addr(madt.table.lic_address() as u64);
+    fb_println!("{}", lic_addr);
 }

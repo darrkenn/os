@@ -11,6 +11,15 @@ pub struct MADT {
     // Interrupt controller structures
 }
 
+impl MADT {
+    pub fn header(&self) -> &SdtHeader {
+        &self.h
+    }
+    pub fn lic_address(&self) -> u32 {
+        self.lic_address
+    }
+}
+
 pub struct MADTRegion {
     pub table: MADT,
     pub madt_address: u64,
