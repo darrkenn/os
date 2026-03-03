@@ -1,3 +1,5 @@
+use x86_64::instructions::interrupts;
+
 use crate::{
     output::framebuffer::{FRAME_BUFFER_WRITER, frame_buffer::FrameBufferColour},
     utils::deadlock::lock_mutex,
@@ -5,9 +7,11 @@ use crate::{
 
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-    lock_mutex(&FRAME_BUFFER_WRITER)
-        .write_fmt(args)
-        .expect("Printing to framebuffer failed");
+    interrupts::without_interrupts(|| {
+        lock_mutex(&FRAME_BUFFER_WRITER)
+            .write_fmt(args)
+            .expect("Printing to framebuffer failed")
+    })
 }
 
 pub fn change_colour(colour: FrameBufferColour) {

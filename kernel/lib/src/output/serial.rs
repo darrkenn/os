@@ -14,9 +14,11 @@ lazy_static! {
 
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-    lock_mutex(&SERIAL)
-        .write_fmt(args)
-        .expect("Printing to serial failed")
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        lock_mutex(&SERIAL)
+            .write_fmt(args)
+            .expect("Printing to serial failed")
+    })
 }
 
 #[macro_export]
