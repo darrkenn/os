@@ -1,7 +1,5 @@
 use crate::system::acpi::sdt::SdtHeader;
 
-pub mod ics;
-
 #[repr(C, packed)]
 pub struct MADT {
     h: SdtHeader,

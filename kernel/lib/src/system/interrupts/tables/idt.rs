@@ -1,10 +1,8 @@
 use lazy_static::lazy_static;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::structures::idt::InterruptDescriptorTable;
 
-use crate::{
-    fb_print, fb_println,
-    output::framebuffer::{frame_buffer::FrameBufferColour, print::change_colour},
-    system::interrupts::handlers::faults::{breakpoint_handler, double_fault_handler},
+use crate::system::interrupts::handlers::{
+    breakpoint_handler, double_fault_handler, timer_interrupt_handler,
 };
 
 lazy_static! {
@@ -16,6 +14,7 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(crate::system::interrupts::tables::gdt::DOUBLE_FAULT_IST_INDEX);
         };
+        idt[32].set_handler_fn(timer_interrupt_handler);
         idt
     };
 }

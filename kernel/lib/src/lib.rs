@@ -6,7 +6,7 @@ pub mod system;
 pub mod time;
 pub mod utils;
 
-use crate::{output::framebuffer::FRAME_BUFFER_WRITER, time::cmos::CMOS};
+use crate::time::cmos::CMOS;
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 
@@ -17,5 +17,8 @@ lazy_static! {
 #[panic_handler]
 pub fn panic(info: &PanicInfo) -> ! {
     fb_println!("{}", info);
-    loop {}
+    serial_println!("{}", info);
+    loop {
+        unsafe { core::arch::asm!("hlt") };
+    }
 }

@@ -1,16 +1,12 @@
-use core::ptr::read_unaligned;
-
 use crate::{
     fb_println,
     system::{
         acpi::{
-            fadt::{AddressType, FADT},
             local_apic,
-            madt::{MADT, MADTRegion},
+            madt::MADTRegion,
             rsdp::{RsdpError, RsdpTable},
-            sdt::{SdtHeader, SdtHeaderError},
             signatures,
-            xsdt::{XSDT, XSDTRegion},
+            xsdt::XSDTRegion,
         },
         physical_memory::convert_physical_to_virtual_addr,
     },

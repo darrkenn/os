@@ -1,4 +1,4 @@
-use core::{ops::Add, ptr};
+use core::ptr;
 
 use crate::system::{acpi::sdt::SdtHeader, physical_memory::convert_physical_to_virtual_addr};
 

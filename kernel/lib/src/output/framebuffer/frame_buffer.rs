@@ -152,7 +152,7 @@ impl FrameBufferWriter {
     }
 
     fn write_pixel(&mut self, x: usize, y: usize, intensity: u8) {
-        let (stride, mut pixel_format, bytes_per_pixel): (usize, PixelFormat, usize) =
+        let (stride, pixel_format, bytes_per_pixel): (usize, PixelFormat, usize) =
             if let Some(info) = self.info {
                 (info.stride, info.pixel_format, info.bytes_per_pixel)
             } else {
@@ -175,7 +175,7 @@ impl FrameBufferWriter {
             //PixelFormat::Bgr => [intensity / 2, intensity, intensity, 0],
             PixelFormat::U8 => [if intensity > 200 { 0xf } else { 0 }, 0, 0, 0],
             other => {
-                pixel_format = PixelFormat::Rgb;
+                //pixel_format = PixelFormat::Rgb;
                 panic!("pixel format {:?} not supported in logger", other)
             }
         };
