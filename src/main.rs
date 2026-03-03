@@ -36,6 +36,8 @@ fn main() {
     cmd.arg("-device")
         .arg("isa-debug-exit,iobase=0xf4,iosize=0x04");
 
+    //cmd.arg("-d").arg("int");
+
     if uefi {
         let prebuilt =
             Prebuilt::fetch(Source::LATEST, "target/ovmf").expect("failed to update prebuilt");
