@@ -1,7 +1,7 @@
 # rsos
 
 ## Requirements
-- Rust
+- Rust Nightly
 - Qemu
 
 ## How to start
