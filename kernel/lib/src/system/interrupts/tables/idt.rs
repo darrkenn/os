@@ -12,7 +12,7 @@ lazy_static! {
         unsafe {
             idt.double_fault
                 .set_handler_fn(double_fault_handler)
-                .set_stack_index(crate::system::interrupts::tables::gdt::DOUBLE_FAULT_IST_INDEX);
+                .set_stack_index(0);
         };
         idt[32].set_handler_fn(timer_interrupt_handler);
         idt
