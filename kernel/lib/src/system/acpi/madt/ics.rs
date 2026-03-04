@@ -1,8 +1,9 @@
-pub trait IcsStructure {
-    fn structure_type() -> u8;
+pub trait Ics {
+    fn structure_type(&self) -> u8;
 }
 
 #[allow(dead_code)]
+#[derive(Clone, Copy)]
 #[repr(u8)]
 pub enum InterruptControllerStructureType {
     ProcessorLocalApic = 0,
@@ -37,6 +38,13 @@ pub enum InterruptControllerStructureType {
 
 #[allow(dead_code)]
 pub mod structures {
+
+    #[repr(C, packed)]
+    pub struct ICSTypeLength {
+        pub stype: u8,
+        pub length: u8,
+    }
+
     // MPS INTI Flags
     // Polarity: 2 bits (Polarity of APIC I/O: 00 ?, 01 Active high, 10 Reserved, 11 Active Low)
     // Trigger mode: 2 bits (Trigger mode of APIC I/O: 00 ?, 01 Edge-triggered, 10 Reserved, 11 Level-triggered)
@@ -47,18 +55,25 @@ pub mod structures {
     // Online Capable: 1 bit (If bit is set processor can be enabled)
     // Reserved: 30 bits
 
+    use crate::system::acpi::madt::ics::Ics;
+
     #[repr(C, packed)]
     pub struct ProcessorLocalAPIC {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         acpi_processor_uid: u8,
         apic_id: u8,
         // Local APIC Flags
         flags: u32,
     }
+    impl Ics for ProcessorLocalAPIC {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct IOAPIC {
+        type_length: ICSTypeLength,
         stype: u8,
         length: u8,
         id: u8,
@@ -68,11 +83,20 @@ pub mod structures {
         // Indicates where the IOAPIC interrupts start
         gsib: u32,
     }
+    impl Ics for IOAPIC {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
+    impl IOAPIC {
+        pub fn address(&self) -> u32 {
+            self.address
+        }
+    }
 
     #[repr(C, packed)]
     pub struct InterruptSourceOverride {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         bus: u8,
         // Bus relative interrupt source
         source: u8,
@@ -82,52 +106,72 @@ pub mod structures {
         // MPS INTI Flags
         flags: u16,
     }
+    impl Ics for InterruptSourceOverride {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct NMISource {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         // MPS INTI FLAGS
         flags: u16,
         // Global System Interrupt
         // This is the GSI that the NMI will signal
         gsi: u32,
     }
+    impl Ics for NMISource {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct LocalAPICNMI {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         acpi_processor_uid: u8,
         // MPS INTI FLAGS
         flags: u16,
         // Local APIC Interrupt Input LINT number to which the NMI is connected
         local_apic_lint_num: u8,
     }
+    impl Ics for LocalAPICNMI {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct LAAO {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         _reserved: u16,
         // Physical address of local APIC
         local_apic_address: u64,
     }
+    impl Ics for LAAO {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct IOSAPIC {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         io_apic_id: u8,
         _reserved: u8,
         gsib: u32,
         io_sapic_address: u64,
     }
+    impl Ics for IOSAPIC {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct LocalSAPIC {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         acpi_processor_id: u8,
         local_sapic_id: u8,
         local_sapic_edi: u8,
@@ -138,11 +182,15 @@ pub mod structures {
         // ACPI_PROCESSOR_UID_STRING
         // >= 1 and null terminated
     }
+    impl Ics for LocalSAPIC {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct PlatformInterruptSource {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         // MPS INTI FLAGS
         flags: u16,
         // 1 PMI, 2 INIT, 3 Correct Platform Error Interrupt
@@ -159,36 +207,53 @@ pub mod structures {
         // reserved: 31 bits
         pisf: u32,
     }
+    impl Ics for PlatformInterruptSource {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct PLx2A {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         _reserved: u16,
         x2apic_id: u32,
         // Local APIC Flags
         flags: u32,
         acpi_processor_uid: u32,
     }
+    impl Ics for PLx2A {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct Localx2APICNMI {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         // MPS INTI Flags
         flags: u16,
         acpi_processor_uid: u32,
         local_x2apic_lint_num: u8,
         _reserved: [u8; 3],
     }
+    impl Ics for Localx2APICNMI {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
+    }
 
     #[repr(C, packed)]
     pub struct MultiprocessorWakeup {
-        stype: u8,
-        length: u8,
+        type_length: ICSTypeLength,
         mailbox_version: u16,
         _reserved: u32,
         mailbox_address: u64,
+    }
+    impl Ics for MultiprocessorWakeup {
+        fn structure_type(&self) -> u8 {
+            self.type_length.stype
+        }
     }
 
     // TODO Create structs for the rest

@@ -3,7 +3,10 @@ use crate::{
     system::{
         acpi::{
             local_apic,
-            madt::MADTRegion,
+            madt::{
+                MADTRegion,
+                ics::{self, InterruptControllerStructureType},
+            },
             rsdp::{RsdpError, RsdpTable},
             signatures,
             xsdt::XSDTRegion,
@@ -45,18 +48,27 @@ pub fn init(rsdp_addr: u64) {
         fb_println!("Xsdt validated")
     };
 
+    // Load MADT
     let madt_addr = convert_physical_to_virtual_addr(
         xsdt_region
             .get_entry_by_signature(signatures::MADT)
             .expect("Couldn't find madt"),
     );
-
     let madt = MADTRegion::new(madt_addr);
-    let lic_addr = convert_physical_to_virtual_addr(madt.table.lic_address() as u64);
 
-    // Setup CPU local apic and enable timer
+    // Setup CPU lcoal apic and enable timer
+    let lic_addr = convert_physical_to_virtual_addr(madt.table.lic_address() as u64);
     unsafe {
         local_apic::init(lic_addr, local_apic::timer::TimerMode::Periodic);
     }
     fb_println!("Local APIC enabled and timer started");
+
+    let io_apic_ptr = match madt.find_ics_of_type(InterruptControllerStructureType::IOAPIC) {
+        Some(addr) => addr,
+        None => panic!("Cant find I/O APIC ICS"),
+    } as *const ics::structures::IOAPIC;
+    let io_apic_addr = convert_physical_to_virtual_addr(unsafe {
+        core::ptr::read_unaligned(io_apic_ptr).address() as u64
+    });
+    fb_println!("{}", io_apic_addr);
 }
