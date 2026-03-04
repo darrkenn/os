@@ -1,3 +1,4 @@
+pub mod ics;
 use crate::system::acpi::sdt::SdtHeader;
 
 #[repr(C, packed)]

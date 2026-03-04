@@ -58,4 +58,5 @@ pub fn init(rsdp_addr: u64) {
     unsafe {
         local_apic::init(lic_addr, local_apic::timer::TimerMode::Periodic);
     }
+    fb_println!("Local APIC enabled and timer started");
 }

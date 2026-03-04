@@ -15,7 +15,7 @@ macro_rules! call_test {
 }
 
 use bootloader_api::{BootInfo, config::Mapping, entry_point};
-use lib::{fb_print, fb_println};
+use lib::fb_println;
 // Import is actually used
 #[allow(unused_imports)]
 use lib::panic;
