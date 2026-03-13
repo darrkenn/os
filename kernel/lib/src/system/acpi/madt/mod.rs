@@ -1,10 +1,7 @@
 pub mod ics;
-use crate::{
-    fb_println,
-    system::acpi::{
-        madt::ics::{InterruptControllerStructureType, structures::ICSTypeLength},
-        sdt::SdtHeader,
-    },
+use crate::system::acpi::{
+    madt::ics::{InterruptControllerStructureType, structures::ICSTypeLength},
+    sdt::SdtHeader,
 };
 
 #[repr(C, packed)]

@@ -3,17 +3,6 @@
 
 pub mod init;
 
-// This macro creates a test with the name of the function provided and calls it
-#[macro_export]
-macro_rules! call_test {
-    ($function:ident) => {
-        #[test_case]
-        fn $function() {
-            $function();
-        }
-    };
-}
-
 use bootloader_api::{BootInfo, config::Mapping, entry_point};
 use lib::fb_println;
 // Import is actually used
