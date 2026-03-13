@@ -63,12 +63,19 @@ pub fn init(rsdp_addr: u64) {
     }
     fb_println!("Local APIC enabled and timer started");
 
-    let io_apic_ptr = match madt.find_ics_of_type(InterruptControllerStructureType::IOAPIC) {
-        Some(addr) => addr,
-        None => panic!("Cant find I/O APIC ICS"),
-    } as *const ics::structures::IOAPIC;
-    let io_apic_addr = convert_physical_to_virtual_addr(unsafe {
-        core::ptr::read_unaligned(io_apic_ptr).address() as u64
-    });
-    fb_println!("{}", io_apic_addr);
+    let io_apic_structure_ptr =
+        match madt.find_ics_of_type(InterruptControllerStructureType::IOAPIC) {
+            Some(addr) => addr,
+            None => panic!("Cant find I/O APIC ICS"),
+        } as *const ics::structures::IOAPIC;
+
+    let io_apic_ptr = unsafe {
+        convert_physical_to_virtual_addr(
+            core::ptr::read_unaligned(io_apic_structure_ptr).address() as u64
+        ) as *const u32
+    };
+    unsafe { core::ptr::write_volatile::<u32>(io_apic_ptr.cast_mut(), 0x01) };
+    let id = unsafe { core::ptr::read_volatile::<u32>(io_apic_ptr.offset(4)) };
+
+    fb_println!("{}", id);
 }
